@@ -1,7 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
+import { BigNumber } from "@ethersproject/bignumber";
 import { ChakraProvider, Flex, Heading, Button, Alert, AlertTitle, AlertDescription } from '@chakra-ui/react'
+import { Attestation, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+import { decode } from 'punycode';
 
 const APIKEY = process.env.NEXT_PUBLIC_GC_API_KEY
 const SCORERID = process.env.NEXT_PUBLIC_GC_SCORER_ID
@@ -1058,13 +1061,121 @@ const EasAbi = [
   }
 ]
 
+export type PROVIDER_ID =
+  | "Signer"
+  | "Google"
+  | "Ens"
+  | "Poh"
+  | "POAP"
+  | "Facebook"
+  | "FacebookProfilePicture"
+  | "Brightid"
+  | "Github"
+  | "TenOrMoreGithubFollowers"
+  | "FiftyOrMoreGithubFollowers"
+  | "ForkedGithubRepoProvider"
+  | "StarredGithubRepoProvider"
+  | "FiveOrMoreGithubRepos"
+  | "githubContributionActivityGte#30"
+  | "githubContributionActivityGte#60"
+  | "githubContributionActivityGte#120"
+  | "githubAccountCreationGte#90"
+  | "githubAccountCreationGte#180"
+  | "githubAccountCreationGte#365"
+  | "GitcoinContributorStatistics#numGrantsContributeToGte#1"
+  | "GitcoinContributorStatistics#numGrantsContributeToGte#10"
+  | "GitcoinContributorStatistics#numGrantsContributeToGte#25"
+  | "GitcoinContributorStatistics#numGrantsContributeToGte#100"
+  | "GitcoinContributorStatistics#totalContributionAmountGte#10"
+  | "GitcoinContributorStatistics#totalContributionAmountGte#100"
+  | "GitcoinContributorStatistics#totalContributionAmountGte#1000"
+  | "GitcoinContributorStatistics#numRoundsContributedToGte#1"
+  | "GitcoinContributorStatistics#numGr14ContributionsGte#1"
+  | "GitcoinGranteeStatistics#numOwnedGrants#1"
+  | "GitcoinGranteeStatistics#numGrantContributors#10"
+  | "GitcoinGranteeStatistics#numGrantContributors#25"
+  | "GitcoinGranteeStatistics#numGrantContributors#100"
+  | "GitcoinGranteeStatistics#totalContributionAmount#100"
+  | "GitcoinGranteeStatistics#totalContributionAmount#1000"
+  | "GitcoinGranteeStatistics#totalContributionAmount#10000"
+  | "GitcoinGranteeStatistics#numGrantsInEcoAndCauseRound#1"
+  | "Linkedin"
+  | "Discord"
+  | "GitPOAP"
+  | "Snapshot"
+  | "SnapshotProposalsProvider"
+  | "SnapshotVotesProvider"
+  | "ethPossessionsGte#1"
+  | "ethPossessionsGte#10"
+  | "ethPossessionsGte#32"
+  | "FirstEthTxnProvider"
+  | "EthGTEOneTxnProvider"
+  | "EthGasProvider"
+  | "SelfStakingBronze"
+  | "SelfStakingSilver"
+  | "SelfStakingGold"
+  | "CommunityStakingBronze"
+  | "CommunityStakingSilver"
+  | "CommunityStakingGold"
+  | "NFT"
+  | "ZkSync"
+  | "ZkSyncEra"
+  | "Lens"
+  | "GnosisSafe"
+  | "Coinbase"
+  | "GuildMember"
+  | "GuildAdmin"
+  | "GuildPassportMember"
+  | "Hypercerts"
+  | "PHIActivitySilver"
+  | "PHIActivityGold"
+  | "HolonymGovIdProvider"
+  | "IdenaState#Newbie"
+  | "IdenaState#Verified"
+  | "IdenaState#Human"
+  | "IdenaStake#1k"
+  | "IdenaStake#10k"
+  | "IdenaStake#100k"
+  | "IdenaAge#5"
+  | "IdenaAge#10"
+  | "CivicCaptchaPass"
+  | "CivicUniquenessPass"
+  | "CivicLivenessPass"
+  | "Twitter"
+  | "TwitterTweetGT10"
+  | "TwitterFollowerGT100"
+  | "TwitterFollowerGT500"
+  | "TwitterFollowerGTE1000"
+  | "TwitterFollowerGT5000"
+  | "twitterAccountAgeGte#180"
+  | "twitterAccountAgeGte#365"
+  | "twitterAccountAgeGte#730"
+  | "twitterTweetDaysGte#30"
+  | "twitterTweetDaysGte#60"
+  | "twitterTweetDaysGte#120";
+
+const providerBitMapInfo = [{ "bit": 0, "index": 0, "name": "SelfStakingBronze" }, { "bit": 1, "index": 0, "name": "SelfStakingSilver" }, { "bit": 2, "index": 0, "name": "SelfStakingGold" }, { "bit": 3, "index": 0, "name": "CommunityStakingBronze" }, { "bit": 4, "index": 0, "name": "CommunityStakingSilver" }, { "bit": 5, "index": 0, "name": "CommunityStakingGold" }, { "bit": 6, "index": 0, "name": "GitcoinContributorStatistics#numGrantsContributeToGte#1" }, { "bit": 7, "index": 0, "name": "GitcoinContributorStatistics#numGrantsContributeToGte#10" }, { "bit": 8, "index": 0, "name": "GitcoinContributorStatistics#numGrantsContributeToGte#25" }, { "bit": 9, "index": 0, "name": "GitcoinContributorStatistics#numGrantsContributeToGte#100" }, { "bit": 10, "index": 0, "name": "GitcoinContributorStatistics#totalContributionAmountGte#10" }, { "bit": 11, "index": 0, "name": "GitcoinContributorStatistics#totalContributionAmountGte#100" }, { "bit": 12, "index": 0, "name": "GitcoinContributorStatistics#totalContributionAmountGte#1000" }, { "bit": 13, "index": 0, "name": "GitcoinContributorStatistics#numGr14ContributionsGte#1" }, { "bit": 14, "index": 0, "name": "GitcoinContributorStatistics#numRoundsContributedToGte#1" }, { "bit": 15, "index": 0, "name": "GitcoinGranteeStatistics#numOwnedGrants#1" }, { "bit": 16, "index": 0, "name": "GitcoinGranteeStatistics#numGrantContributors#10" }, { "bit": 17, "index": 0, "name": "GitcoinGranteeStatistics#numGrantContributors#25" }, { "bit": 18, "index": 0, "name": "GitcoinGranteeStatistics#numGrantContributors#100" }, { "bit": 19, "index": 0, "name": "GitcoinGranteeStatistics#totalContributionAmount#100" }, { "bit": 20, "index": 0, "name": "GitcoinGranteeStatistics#totalContributionAmount#1000" }, { "bit": 21, "index": 0, "name": "GitcoinGranteeStatistics#totalContributionAmount#10000" }, { "bit": 22, "index": 0, "name": "GitcoinGranteeStatistics#numGrantsInEcoAndCauseRound#1" }, { "bit": 23, "index": 0, "name": "twitterAccountAgeGte#180" }, { "bit": 24, "index": 0, "name": "twitterAccountAgeGte#365" }, { "bit": 25, "index": 0, "name": "twitterAccountAgeGte#730" }, { "bit": 26, "index": 0, "name": "twitterTweetDaysGte#30" }, { "bit": 27, "index": 0, "name": "twitterTweetDaysGte#60" }, { "bit": 28, "index": 0, "name": "twitterTweetDaysGte#120" }, { "bit": 29, "index": 0, "name": "Discord" }, { "bit": 30, "index": 0, "name": "Google" }, { "bit": 31, "index": 0, "name": "githubAccountCreationGte#90" }, { "bit": 32, "index": 0, "name": "githubAccountCreationGte#180" }, { "bit": 33, "index": 0, "name": "githubAccountCreationGte#365" }, { "bit": 34, "index": 0, "name": "githubContributionActivityGte#30" }, { "bit": 35, "index": 0, "name": "githubContributionActivityGte#60" }, { "bit": 36, "index": 0, "name": "githubContributionActivityGte#120" }, { "bit": 37, "index": 0, "name": "Facebook" }, { "bit": 38, "index": 0, "name": "FacebookProfilePicture" }, { "bit": 39, "index": 0, "name": "Linkedin" }, { "bit": 40, "index": 0, "name": "Ens" }, { "bit": 41, "index": 0, "name": "Brightid" }, { "bit": 42, "index": 0, "name": "Poh" }, { "bit": 43, "index": 0, "name": "ethPossessionsGte#1" }, { "bit": 44, "index": 0, "name": "ethPossessionsGte#10" }, { "bit": 45, "index": 0, "name": "ethPossessionsGte#32" }, { "bit": 46, "index": 0, "name": "FirstEthTxnProvider" }, { "bit": 47, "index": 0, "name": "EthGTEOneTxnProvider" }, { "bit": 48, "index": 0, "name": "EthGasProvider" }, { "bit": 49, "index": 0, "name": "SnapshotVotesProvider" }, { "bit": 50, "index": 0, "name": "SnapshotProposalsProvider" }, { "bit": 51, "index": 0, "name": "GitPOAP" }, { "bit": 52, "index": 0, "name": "NFT" }, { "bit": 53, "index": 0, "name": "ZkSync" }, { "bit": 54, "index": 0, "name": "ZkSyncEra" }, { "bit": 55, "index": 0, "name": "Lens" }, { "bit": 56, "index": 0, "name": "GnosisSafe" }, { "bit": 57, "index": 0, "name": "Coinbase" }, { "bit": 58, "index": 0, "name": "GuildMember" }, { "bit": 59, "index": 0, "name": "GuildAdmin" }, { "bit": 60, "index": 0, "name": "GuildPassportMember" }, { "bit": 61, "index": 0, "name": "Hypercerts" }, { "bit": 62, "index": 0, "name": "PHIActivitySilver" }, { "bit": 63, "index": 0, "name": "PHIActivityGold" }, { "bit": 64, "index": 0, "name": "HolonymGovIdProvider" }, { "bit": 65, "index": 0, "name": "IdenaState#Newbie" }, { "bit": 66, "index": 0, "name": "IdenaState#Verified" }, { "bit": 67, "index": 0, "name": "IdenaState#Human" }, { "bit": 68, "index": 0, "name": "IdenaStake#1k" }, { "bit": 69, "index": 0, "name": "IdenaStake#10k" }, { "bit": 70, "index": 0, "name": "IdenaStake#100k" }, { "bit": 71, "index": 0, "name": "IdenaAge#5" }, { "bit": 72, "index": 0, "name": "IdenaAge#10" }, { "bit": 73, "index": 0, "name": "CivicCaptchaPass" }, { "bit": 74, "index": 0, "name": "CivicUniquenessPass" }, { "bit": 75, "index": 0, "name": "CivicLivenessPass" }]
+
+export type StampBit = {
+  bit: number;
+  index: number;
+  name: string;
+};
+
+export type DecodedProviderInfo = {
+  providerName: PROVIDER_ID;
+  providerNumber: number;
+};
+
 export default function Passport() {
   // here we deal with any local state we need to manage
   const [address, setAddress] = useState<string>('')
   const [resolverContract, setResolverContract] = useState<ethers.Contract>()
   const [EasContract, setEasContract] = useState<ethers.Contract>()
-  const [connected, setConnected] = useState<bool>()
-  const [uuid, setUuid] = useState<string>('')
+  const [connected, setConnected] = useState<boolean>()
+  // const [uuid, setUuid] = useState<string>('')
+  const [hasStamps, setHasStamps] = useState<boolean>(false)
+  const [stamps, setStamps] = useState<Array<string>>([])
 
   useEffect(() => {
     checkConnection()
@@ -1106,25 +1217,69 @@ export default function Passport() {
       if (uuid == "0x0000000000000000000000000000000000000000000000000000000000000000") {
         (console.log("no passport data on chain!"))
       } else {
-        setUuid(uuid)
-
+        return uuid
       }
     }
   }
 
-
-  async function getAttestation() {
+  async function getAttestation(uuid: string) {
     if (connected) {
       const attestation = await EasContract.getAttestation(uuid)
-      console.log("attestation = ", attestation)
+      return attestation
     }
   }
 
+  async function decodeAttestation(attestation: Attestation) {
+
+    const schemaEncoder = new SchemaEncoder(
+      "uint256[] providers,bytes32[] hashes,uint64[] issuanceDates,uint64[] expirationDates,uint16 providerMapVersion"
+    );
+    const decodedData = schemaEncoder.decodeData(attestation.data)
+    console.log("decoded data!\n", decodedData)
+
+    const providers = decodedData.find((data) => data.name === "providers")?.value.value as BigNumber[];
+    const issuanceDates = decodedData.find((data) => data.name === "issuanceDates")?.value.value as BigNumber[];
+    const expirationDates = decodedData.find((data) => data.name === "expirationDates")?.value.value as BigNumber[];
+    const hashes = decodedData.find((data) => data.name === "hashes")?.value.value as string[];
+
+    type DecodedProviderInfo = {
+      providerName: PROVIDER_ID;
+      providerNumber: number;
+    };
+
+    const onChainProviderInfo: DecodedProviderInfo[] = providerBitMapInfo
+      .map((info) => {
+        const providerMask = BigNumber.from(1).shl(info.bit);
+        const currentProvidersBitmap = providers[info.index];
+        if (currentProvidersBitmap && !providerMask.and(currentProvidersBitmap).eq(BigNumber.from(0))) {
+          return {
+            providerName: info.name,
+            providerNumber: info.index * 256 + info.bit,
+          };
+        }
+      })
+      .filter((provider): provider is DecodedProviderInfo => provider !== undefined);
+
+    return onChainProviderInfo
+  }
+
+  async function getStamps(onChainProviderInfo: DecodedProviderInfo[]) {
+    const stamps: Array<string> = []
+    onChainProviderInfo.forEach(toArray)
+    function toArray(item, index) {
+      stamps.push(item.providerName)
+    }
+    setStamps(stamps)
+    console.log("stamps", stamps)
+    setHasStamps(stamps.includes('twitterAccountAgeGte#180'))
+  }
 
 
-  const getInfo = () => {
-    getUuid()
-    getAttestation()
+  async function getInfo() {
+    const uuid = await getUuid()
+    const att = await getAttestation(uuid)
+    const onChainProviderInfo = await decodeAttestation(att)
+    const myStamps = await getStamps(onChainProviderInfo)
   }
 
   const styles = {
@@ -1147,6 +1302,12 @@ export default function Passport() {
         <br />
         <Heading as='h1' size='4xl' noOfLines={2}>BaseGoerli Passport app</Heading>
         <Heading as='h1' size='xl' noOfLines={2}>Make sure your wallet is connected to Base Goerli!</Heading>
+        <br />
+        <br />
+        {hasStamps && <Heading as='h1' size='xl'>"well done you have the right onchain stamps!" </Heading>}
+        <br />
+        <br />
+        {!hasStamps && <Heading as='h1' size='xl'>"you don't have the right onchain stamps!" </Heading>}
       </ChakraProvider >
     </div >
   )
