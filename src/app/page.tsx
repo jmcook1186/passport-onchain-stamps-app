@@ -60,20 +60,28 @@ export default function Passport() {
   async function getUuid() {
     if (connected) {
       // TODO this is a test address known to have onchain stamps! swap for var address in final app.
-      const uuid = await resolverContract.passports("0xC79ABB54e4824Cdb65C71f2eeb2D7f2db5dA1fB8")
-      console.log(uuid)
-      if (uuid == "0x0000000000000000000000000000000000000000000000000000000000000000") {
-        (console.log("no passport data on chain!"))
+      if (resolverContract !== undefined) {
+        const uuid = await resolverContract.passports("0xC79ABB54e4824Cdb65C71f2eeb2D7f2db5dA1fB8")
+        console.log(uuid)
+        if (uuid == "0x0000000000000000000000000000000000000000000000000000000000000000") {
+          (console.log("no passport data on chain!"))
+        } else {
+          return uuid
+        }
       } else {
-        return uuid
+        console.log("error loading Resolver contract")
       }
     }
   }
 
   async function getAttestation(uuid: string) {
     if (connected) {
-      const attestation = await EasContract.getAttestation(uuid)
-      return attestation
+      if (EasContract !== undefined) {
+        const attestation = await EasContract.getAttestation(uuid)
+        return attestation
+      } else {
+        console.log("error loading EAS contract")
+      }
     }
   }
 
