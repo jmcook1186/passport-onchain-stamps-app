@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { BigNumber } from "@ethersproject/bignumber";
-import { ChakraProvider, Flex, Heading, Button, Alert, AlertTitle, AlertDescription } from '@chakra-ui/react'
+import { ChakraProvider, Flex, Heading, Button } from '@chakra-ui/react'
+import { TabLayout } from './tab-contents'
 import { Attestation, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
 import { resolverAbi, EasAbi } from "./abis";
 import { PROVIDER_ID, providerBitMapInfo, DecodedProviderInfo } from "./providerInfo";
+
 const resolverContractAddress = "0xc0fF118369894100b652b5Bb8dF5A2C3d7b2E343";
 const EasContractAddress = "0xAcfE09Fd03f7812F022FBf636700AdEA18Fd2A7A"
 
@@ -15,27 +17,32 @@ declare global {
   }
 }
 
+interface Stamp {
+  id: number
+  stamp: string
+}
+
 export default function Passport() {
   // here we deal with any local state we need to manage
   const [address, setAddress] = useState<string>('')
+  const [provider, setProvider] = useState<ethers.BrowserProvider>()
   const [resolverContract, setResolverContract] = useState<ethers.Contract>()
   const [EasContract, setEasContract] = useState<ethers.Contract>()
   const [connected, setConnected] = useState<boolean>()
   const [hasStamps, setHasStamps] = useState<boolean>(false)
-  const [stamps, setStamps] = useState<Array<string>>([])
+  const [stamps, setStamps] = useState<Array<Stamp>>([])
 
   useEffect(() => {
     checkConnection()
     async function checkConnection() {
       try {
-        const provider = new ethers.BrowserProvider(window.ethereum)
-        const accounts = await provider.listAccounts()
+        const newProvider = new ethers.BrowserProvider(window.ethereum)
+        const accounts = await newProvider.listAccounts()
+        setProvider(newProvider)
         // if the user is connected, set their account
         if (accounts && accounts[0]) {
           setAddress(accounts[0].address)
           setConnected(true)
-          setResolverContract(new ethers.Contract(resolverContractAddress, resolverAbi, provider))
-          setEasContract(new ethers.Contract(EasContractAddress, EasAbi, provider))
           // The address from the above deployment example
         }
       } catch (err) {
@@ -46,14 +53,22 @@ export default function Passport() {
 
   async function connect() {
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum)
+      const newProvider = new ethers.BrowserProvider(window.ethereum)
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
       setAddress(accounts[0])
       setConnected(true)
-      setResolverContract(new ethers.Contract(resolverContractAddress, resolverAbi, provider))
-      setEasContract(new ethers.Contract(EasContractAddress, EasAbi, provider))
+      setProvider(newProvider)
     } catch (err) {
       console.log('error connecting...')
+    }
+  }
+
+  function loadContracts() {
+    if (connected) {
+      setResolverContract(new ethers.Contract(resolverContractAddress, resolverAbi, provider))
+      setEasContract(new ethers.Contract(EasContractAddress, EasAbi, provider))
+    } else {
+      console.log("connect your wallet!")
     }
   }
 
@@ -120,21 +135,27 @@ export default function Passport() {
   }
 
   async function getStamps(onChainProviderInfo: DecodedProviderInfo[]) {
-    const stamps: Array<string> = []
+    const stamps: Array<Stamp> = []
     onChainProviderInfo.forEach(toArray)
     function toArray(item: any, index: number) {
-      stamps.push(item.providerName)
+      let s = { id: index, stamp: item.providerName }
+      stamps.push(s)
     }
     setStamps(stamps)
     console.log("stamps", stamps)
-    setHasStamps(stamps.includes('twitterAccountAgeGte#180'))
+    setHasStamps(stamps.length > 0)
   }
 
-  async function getStampInfo() {
-    const uuid = await getUuid()
-    const att = await getAttestation(uuid)
-    const onChainProviderInfo = await decodeAttestation(att)
-    const myStamps = await getStamps(onChainProviderInfo)
+  async function queryPassport() {
+    try {
+      const contracts = await loadContracts()
+      const uuid = await getUuid()
+      const att = await getAttestation(uuid)
+      const onChainProviderInfo = await decodeAttestation(att)
+      const myStamps = await getStamps(onChainProviderInfo)
+    } catch {
+      console.log("error decoding data - you might not have any data onchain!")
+    }
   }
 
   const styles = {
@@ -148,22 +169,18 @@ export default function Passport() {
   return (
     /* this is the UI for the app */
     <div style={styles.main}>
-      <ChakraProvider >
+      <ChakraProvider>
         <Flex minWidth='max-content' alignItems='right' gap='2' justifyContent='right'>
           <Button colorScheme='teal' variant='outline' onClick={connect}>Connect Wallet</Button>
-          <Button colorScheme='teal' variant='outline' onClick={getStampInfo}>Query Passport</Button>
+          <Button colorScheme='teal' variant='outline' onClick={queryPassport}>Query Passport</Button>
         </Flex>
         <br />
         <br />
-        <Heading as='h1' size='4xl' noOfLines={2}>Onchain Passport app</Heading>
-        <Heading as='h1' size='xl' noOfLines={2}>Make sure your wallet is connected to Base Goerli!</Heading>
+        <Heading as='h1' size='4xl' noOfLines={2}>Welcome to the onchain Stamps!</Heading>
         <br />
-        <br />
-        {connected && hasStamps && <Heading as='h1' size='xl'>"well done you have the right onchain stamps!" </Heading>}
-        <br />
-        <br />
-        {connected && !hasStamps && <Heading as='h1' size='xl'>"you don't have the right onchain stamps!" </Heading>}
+        <TabLayout hasStamps={hasStamps} stamps={stamps} />
       </ChakraProvider >
     </div >
   )
 }
+
