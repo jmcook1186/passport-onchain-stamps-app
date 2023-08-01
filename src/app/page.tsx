@@ -109,9 +109,6 @@ export default function Passport() {
     console.log("decoded data!\n", decodedData)
 
     const providers = decodedData.find((data) => data.name === "providers")?.value.value as BigNumber[];
-    const issuanceDates = decodedData.find((data) => data.name === "issuanceDates")?.value.value as BigNumber[];
-    const expirationDates = decodedData.find((data) => data.name === "expirationDates")?.value.value as BigNumber[];
-    const hashes = decodedData.find((data) => data.name === "hashes")?.value.value as string[];
 
     type DecodedProviderInfo = {
       providerName: PROVIDER_ID;
@@ -134,7 +131,7 @@ export default function Passport() {
     return onChainProviderInfo
   }
 
-  async function getStamps(onChainProviderInfo: DecodedProviderInfo[]) {
+  function getStamps(onChainProviderInfo: DecodedProviderInfo[]) {
     const stamps: Array<Stamp> = []
     onChainProviderInfo.forEach(toArray)
     function toArray(item: any, index: number) {
@@ -152,7 +149,7 @@ export default function Passport() {
       const uuid = await getUuid()
       const att = await getAttestation(uuid)
       const onChainProviderInfo = await decodeAttestation(att)
-      const myStamps = await getStamps(onChainProviderInfo)
+      getStamps(onChainProviderInfo)
     } catch {
       console.log("error decoding data - you might not have any data onchain!")
     }

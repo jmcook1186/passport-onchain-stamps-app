@@ -127,7 +127,7 @@ const ContentBelowThreshold = () => {
             <p>You do not have onchain stamps!.</p>
             <br />
             <p>You can go to the <Link href="https://passport.gitcoin.co" color='teal.500' isExternal>Passport App </Link> and add more stamps to your Passport.</p>
-            <p>These Stamps can then be migrated onchain</p>
+            <p>These Stamps can then be migrated onchain with a single click!</p>
             <br />
             <p>In the meantime you can read our <Link href="https://docs.gitcoin.co" color='teal.500' isExternal> awesome documentation </Link> to learn more about Gitcoin passport</p>
         </>
