@@ -34,16 +34,18 @@ const Welcome = () => {
             <br />
             <br />
             <p>This app demonstrates how to use Gitcoin Passport's onchain stamps.</p>
+            <br />
             <p>In the <b>About onchain Stamps</b> tab you will find resources to help you understand onchain Stamps.</p>
             <br />
             <p>You can also connect your wallet to check whether you have onchain Stamps</p>
-            <p>After connecting your wallet, navigate to the <b>Are your Stamps onchain?</b> tab.</p>
-            <p>The app will automatically check the blockchain for Stamps owned by your address and report back to you in the browser.</p>
-            <p>If you do have onchain stamps, you can view them in the <b>Browse your Stamps</b> tab!</p>
+            <br />
+            <li>Connect your wallet by clicking "Connect"</li>
+            <li>Allow the app to query your Passport by clicking "Query Passport"</li>
+            <li>Navigate to the <b>Are your Stamps onchain?</b> tab to see whether you have onchain Stamps</li>
+            <li>Navigate to the <b>Browse your Stamps</b> tab to see which Stamps you own onchain!</li>
             <br />
             <p>This is just an example app to demonstrate how onchain stamps can be built into your own project.</p>
-            <br />
-            <p><b><i>Get started by connecting your wallet and then connecting your Passport</i></b></p>
+
         </>
     )
 }
