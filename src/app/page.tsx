@@ -43,6 +43,7 @@ export default function Passport() {
         if (accounts && accounts[0]) {
           setAddress(accounts[0].address)
           setConnected(true)
+          await loadContracts()
           // The address from the above deployment example
         }
       } catch (err) {
@@ -58,6 +59,7 @@ export default function Passport() {
       setAddress(accounts[0])
       setConnected(true)
       setProvider(newProvider)
+      await loadContracts()
     } catch (err) {
       console.log('error connecting...')
     }
@@ -145,7 +147,6 @@ export default function Passport() {
 
   async function queryPassport() {
     try {
-      const contracts = await loadContracts()
       const uuid = await getUuid()
       const att = await getAttestation(uuid)
       const onChainProviderInfo = await decodeAttestation(att)
