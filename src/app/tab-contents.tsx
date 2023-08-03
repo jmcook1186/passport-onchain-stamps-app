@@ -1,7 +1,7 @@
 import React from "react"
 import { Heading, Tabs, TabList, TabPanels, Tab, TabPanel, Link, SimpleGrid } from '@chakra-ui/react'
 
-const TabLayout = ({ hasStamps, stamps }) => {
+const TabLayout = ({ hasStamps, stamps, score }) => {
     return (
         <Tabs>
             <TabList>
@@ -9,6 +9,7 @@ const TabLayout = ({ hasStamps, stamps }) => {
                 <Tab>About onchain Stamps</Tab>
                 <Tab>Are your Stamps onchain?</Tab>
                 <Tab>Browse your Stamps</Tab>
+                <Tab>See your score</Tab>
             </TabList>
             <TabPanels>
                 <TabPanel>
@@ -22,6 +23,9 @@ const TabLayout = ({ hasStamps, stamps }) => {
                 </TabPanel>
                 <TabPanel>
                     <ShowStamps stamps={stamps} />
+                </TabPanel>
+                <TabPanel>
+                    <ShowScore score={score} />
                 </TabPanel>
             </TabPanels>
         </Tabs>
@@ -64,7 +68,7 @@ const AboutOnChainStamps = () => {
             <p>This app is a demonstration of how onchain Stamps can be queried and used to gate content by app developers.</p>
             <p>In the background, this app is loading the relevant contracts, querying your address to check for Stamps, retrieving and decoding them.</p>
             <br />
-            <p>If you have Stamps, then you will see a message of congratulations and a nice solarpunk image in the next tab. You will also be able to see your Stamps in the final tab.</p>
+            <p>If you have Stamps, then you will see a message of congratulations in the next tab. You will also be able to see your Stamps in the final tab.</p>
             <br />
             <p>However, if you do not have onchain Stamps, instead of the congratulatory message you will be instructed how to migrate onchain using the Passport app.</p>
         </>
@@ -84,6 +88,28 @@ const ShowStamps = ({ stamps }) => {
             </SimpleGrid >
         </>
     )
+}
+
+const ShowScore = ({ score }) => {
+    if (score > 0) {
+        return (
+            <>
+                <br />
+                <Heading as='h3' size='xl' noOfLines={2}>🎉🎉🎉 Your onchain Passport score is: {score}</Heading>
+                <br />
+                <p>You can improve your score by verifying more Stamps in the Passport app and migrating them onchain.</p>
+            </>
+        )
+    } else {
+        return (
+            <>
+                <br />
+                <Heading as='h3' size='xl' noOfLines={2}>You do not yet have a score.</Heading>
+                <br />
+                <p>Perhaps you haven't connected your wallet, or maybe you don't have any onchain Stamps yet. You can create a Passport, add Stamps and migrate them onchain using the Passport app and migrating them onchain.</p>
+            </>
+        )
+    }
 }
 
 
@@ -112,10 +138,6 @@ const ContentAboveThreshold = () => {
             <p>Congratulations! We found Stamps associated with your address on the BaseGoerli network!</p>
             <br />
             <p>This means you have successfully migrated your Stamps onchain - they can be used in smart contract applications on this network!</p>
-            <br />
-            <p>Enjoy this lovely solarpunk image, only for onchain Stamp holders!</p >
-            <p></p>
-            <br />
         </>
     )
 }
