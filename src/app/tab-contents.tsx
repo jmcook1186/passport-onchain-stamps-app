@@ -149,8 +149,7 @@ const ContentAboveThreshold = () => {
         <>
             <br />
             <br />
-            <p>🎉🎉🎉</p>
-            <p><b>You have onchain stamps!</b></p>
+            <Heading as='h3' size='xl' noOfLines={2}>🎉🎉🎉 You have onchain stamps!</Heading>
             <br />
             <p>Congratulations! We found Stamps associated with your address on the BaseGoerli network!</p>
             <br />
@@ -163,9 +162,9 @@ const ContentBelowThreshold = () => {
     return (
         <>
             <br />
-            <p>😭😭😭</p>
+            <Heading as='h3' size='xl' noOfLines={2}>😭😭😭 You do not have onchain stamps!</Heading>
             <br />
-            <p>You do not have onchain stamps!.</p>
+            <p>Did you remember to connect and click "Query Passport?"</p>
             <br />
             <p>You can go to the <Link href="https://passport.gitcoin.co" color='teal.500' isExternal>Passport App </Link> and add more stamps to your Passport.</p>
             <p>These Stamps can then be migrated onchain with a single click!</p>
