@@ -182,7 +182,10 @@ export default function Passport() {
         </Flex>
         <br />
         <br />
-        <Heading as='h1' size='4xl' noOfLines={2}>Welcome to the onchain Stamps!</Heading>
+        <br />
+        <br />
+        <Heading as='h1' size='4xl' noOfLines={2}>Onchain Stamp Explorer!</Heading>
+        <br />
         <br />
         <TabLayout hasStamps={hasStamps} stamps={stamps} score={score} />
       </ChakraProvider >

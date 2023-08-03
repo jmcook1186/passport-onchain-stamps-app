@@ -76,18 +76,35 @@ const AboutOnChainStamps = () => {
 }
 
 const ShowStamps = ({ stamps }) => {
-    return (
-        <>
-            <br />
-            <Heading as='h3' size='xl' noOfLines={2}>You have the following Stamps onchain</Heading>
-            <br />
-            <SimpleGrid minChildWidth='120px' spacing='40px' border='black'>
-                <>
-                    {stamps.map(s => <p key={s.id}> &#9989; {s.stamp}</p>)}
-                </>
-            </SimpleGrid >
-        </>
-    )
+    if (stamps.length > 0) {
+        return (
+            <>
+                <br />
+                <Heading as='h3' size='xl' noOfLines={2}>You have the following Stamps onchain</Heading>
+                <br />
+                <SimpleGrid minChildWidth='120px' spacing='40px' border='black'>
+                    <>
+                        {stamps.map(s => <p key={s.id}> &#9989; {s.stamp}</p>)}
+                    </>
+                </SimpleGrid >
+            </>
+        )
+    } else {
+        return (
+            <>
+                <br />
+                <Heading as='h3' size='xl' noOfLines={2}>😭😭😭 You don't have any Stamps yet!</Heading>
+                <br />
+                <p>Maybe you haven't connected your wallet, or maybe you haven't migrated your Stamps onchain yet?</p>
+                <br />
+                <SimpleGrid minChildWidth='120px' spacing='40px' border='black'>
+                    <>
+                        {stamps.map(s => <p key={s.id}> &#9989; {s.stamp}</p>)}
+                    </>
+                </SimpleGrid >
+            </>
+        )
+    }
 }
 
 const ShowScore = ({ score }) => {
