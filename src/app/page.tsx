@@ -18,6 +18,10 @@ declare global {
   }
 }
 
+declare global {
+  var provider: ethers.BrowserProvider
+}
+
 interface Stamp {
   id: number
   stamp: string
@@ -26,7 +30,6 @@ interface Stamp {
 export default function Passport() {
   // here we deal with any local state we need to manage
   const [address, setAddress] = useState<string>('default')
-  const [provider, setProvider] = useState<ethers.BrowserProvider>()
   const [connected, setConnected] = useState<boolean>(false)
   const [hasStamps, setHasStamps] = useState<boolean>(false)
   const [stamps, setStamps] = useState<Array<Stamp>>([])
@@ -42,14 +45,13 @@ export default function Passport() {
         console.log(result)
       }
     }
-  }, [address, provider, connected])
+  }, [address, connected])
 
   async function connect() {
     try {
-      const newProvider = new ethers.BrowserProvider(window.ethereum)
+      globalThis.provider = new ethers.BrowserProvider(window.ethereum)
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
       setAddress(accounts[0])
-      setProvider(newProvider)
       setConnected(true)
       console.log("connected via button")
     } catch (err) {
