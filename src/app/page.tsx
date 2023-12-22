@@ -1,11 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
-import { BigNumber } from "@ethersproject/bignumber";
 import { ChakraProvider, Flex, Heading, Button } from '@chakra-ui/react'
 import { TabLayout } from './tab-contents'
 import { GITCOIN_PASSPORT_WEIGHTS } from './stamp-weights';
-import { ObjectType } from 'typescript';
 
 const decoderContractAddress = "0xa652BE6A92c7efbBfEEf6b67eEF10A146AAA8ADc";
 const abi = require('./PassportDecoderABI.json')
@@ -63,25 +61,28 @@ export default function Passport() {
 
   async function getPassportInfo() {
     const decoderContract: ethers.Contract = new ethers.Contract(decoderContractAddress, new ethers.Interface(abi['0x1a4']), provider)
-    const passportInfo = await decoderContract.getPassport(address) // test address '0x85fF01cfF157199527528788ec4eA6336615C989'
-    setHasStamps(true)
+    const passportInfo: [] = await decoderContract.getPassport(address) // test address '0x85fF01cfF157199527528788ec4eA6336615C989'
+    if (passportInfo.length > 1) {
+      setHasStamps(true)
+    }
     return passportInfo
   }
 
 
-  async function queryPassport() {
+  async function getStamps(passportInfo: []) {
     var stamps: Stamp[] = [];
-    try {
-      const passportInfo = await getPassportInfo()
-      for (var i = 0; i < passportInfo.length; i++) {
-        stamps.push({ id: i, stamp: passportInfo[i][0] })
-      }
-      setStamps(stamps)
-      const score = calculate_score(stamps)
-      setScore(score)
-    } catch {
-      console.log('no onchain data')
+    for (var i = 0; i < passportInfo.length; i++) {
+      stamps.push({ id: i, stamp: passportInfo[i][0] })
     }
+    setStamps(stamps)
+    return stamps
+  }
+
+  async function queryPassport() {
+    const passportInfo = await getPassportInfo()
+    const stamps = await getStamps(passportInfo);
+    const score = calculate_score(stamps)
+    setScore(score)
   }
 
   function calculate_score(stampData: Array<Stamp>) {
