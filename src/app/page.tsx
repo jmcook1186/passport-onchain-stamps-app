@@ -62,12 +62,16 @@ export default function Passport() {
   async function getPassportInfo() {
     const decoderContract: ethers.Contract = new ethers.Contract(decoderContractAddress, new ethers.Interface(abi.DecoderAbi['0x14a33']), provider)
     const passportInfo: [] = await decoderContract.getPassport("0x85fF01cfF157199527528788ec4eA6336615C989") // test address '0x85fF01cfF157199527528788ec4eA6336615C989'
-    const scoreFromContract = await decoderContract.getScore("0x85fF01cfF157199527528788ec4eA6336615C989")
-    console.log(scoreFromContract)
     if (passportInfo.length > 1) {
       setHasStamps(true)
     }
     return passportInfo
+  }
+
+  async function getScore() {
+    const decoderContract: ethers.Contract = new ethers.Contract(decoderContractAddress, new ethers.Interface(abi.DecoderAbi['0x14a33']), provider)
+    const score = await decoderContract.getScore("0x85fF01cfF157199527528788ec4eA6336615C989")
+    return score
   }
 
 
@@ -81,29 +85,13 @@ export default function Passport() {
   }
 
   async function queryPassport() {
-    const passportInfo = await getPassportInfo()
-    const stamps = await getStamps(passportInfo);
-    const score = calculate_score(stamps)
-    setScore(score)
+    const passportData = await getPassportInfo();
+    const stamps = await getStamps(passportData);
+    const score = await getScore()
+    setScore(parseInt(score) / 10000)
   }
 
-  function calculate_score(stampData: Array<Stamp>) {
-    let i = 0
-    var scores: Array<number> = []
-    let names = stampData.map(entry => entry.stamp);
 
-    names.forEach(name => {
-      if (GITCOIN_PASSPORT_WEIGHTS.hasOwnProperty(name)) {
-        let key = name as keyof Object;
-        let value = GITCOIN_PASSPORT_WEIGHTS[key].toString();
-        scores.push(parseFloat(value))
-      }
-    })
-
-    const totalScore = scores.reduce((acc, currentScore) => acc + currentScore, 0)
-
-    return totalScore
-  }
 
   const styles = {
     main: {
