@@ -6,7 +6,7 @@ import { TabLayout } from './tab-contents'
 import { GITCOIN_PASSPORT_WEIGHTS } from './stamp-weights';
 
 const decoderContractAddress = "0xa652BE6A92c7efbBfEEf6b67eEF10A146AAA8ADc";
-const abi = require('./PassportDecoderABI.json')
+const abi = require('./abis.ts')
 
 declare global {
   interface Window {
@@ -60,8 +60,10 @@ export default function Passport() {
 
 
   async function getPassportInfo() {
-    const decoderContract: ethers.Contract = new ethers.Contract(decoderContractAddress, new ethers.Interface(abi['0x1a4']), provider)
-    const passportInfo: [] = await decoderContract.getPassport(address) // test address '0x85fF01cfF157199527528788ec4eA6336615C989'
+    const decoderContract: ethers.Contract = new ethers.Contract(decoderContractAddress, new ethers.Interface(abi.DecoderAbi['0x14a33']), provider)
+    const passportInfo: [] = await decoderContract.getPassport("0x85fF01cfF157199527528788ec4eA6336615C989") // test address '0x85fF01cfF157199527528788ec4eA6336615C989'
+    const scoreFromContract = await decoderContract.getScore("0x85fF01cfF157199527528788ec4eA6336615C989")
+    console.log(scoreFromContract)
     if (passportInfo.length > 1) {
       setHasStamps(true)
     }
@@ -136,4 +138,3 @@ export default function Passport() {
     </div >
   )
 }
-
