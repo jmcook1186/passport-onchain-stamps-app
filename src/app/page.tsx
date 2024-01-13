@@ -58,21 +58,22 @@ export default function Passport() {
     return true
   }
 
-
+  /** get passport info from decoder contract */
   async function getPassportInfo() {
     const decoderContract: ethers.Contract = new ethers.Contract(decoderContractAddress, new ethers.Interface(abi.DecoderAbi['0x14a33']), provider)
     const passportInfo: [] = await decoderContract.getPassport(address) // test address '0x85fF01cfF157199527528788ec4eA6336615C989'
     return passportInfo
   }
 
+  /** get poassport score from decoder contract */
   async function getScore() {
     const decoderContract: ethers.Contract = new ethers.Contract(decoderContractAddress, new ethers.Interface(abi.DecoderAbi['0x14a33']), provider)
     const score = await decoderContract.getScore(address)
     return score
   }
 
-
-  async function getStamps(passportInfo: []) {
+  /** parse out stamps from passport info object*/
+  function getStamps(passportInfo: []) {
     var stamps: Stamp[] = [];
     for (var i = 0; i < passportInfo.length; i++) {
       stamps.push({ id: i, stamp: passportInfo[i][0] })
@@ -80,9 +81,10 @@ export default function Passport() {
     return stamps
   }
 
+  /** call getPassportInfo and getStamps and set state vars */
   async function queryPassport() {
     const passportData = await getPassportInfo();
-    const stamps = await getStamps(passportData);
+    const stamps = getStamps(passportData);
     if (stamps.length > 1) {
       setHasStamps(true)
       setStamps(stamps)
