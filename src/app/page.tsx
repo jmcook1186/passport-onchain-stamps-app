@@ -62,9 +62,6 @@ export default function Passport() {
   async function getPassportInfo() {
     const decoderContract: ethers.Contract = new ethers.Contract(decoderContractAddress, new ethers.Interface(abi.DecoderAbi['0x14a33']), provider)
     const passportInfo: [] = await decoderContract.getPassport("0x85fF01cfF157199527528788ec4eA6336615C989") // test address '0x85fF01cfF157199527528788ec4eA6336615C989'
-    if (passportInfo.length > 1) {
-      setHasStamps(true)
-    }
     return passportInfo
   }
 
@@ -80,13 +77,16 @@ export default function Passport() {
     for (var i = 0; i < passportInfo.length; i++) {
       stamps.push({ id: i, stamp: passportInfo[i][0] })
     }
-    setStamps(stamps)
     return stamps
   }
 
   async function queryPassport() {
     const passportData = await getPassportInfo();
     const stamps = await getStamps(passportData);
+    if (stamps.length > 1) {
+      setHasStamps(true)
+      setStamps(stamps)
+    }
     const score = await getScore()
     setScore(parseInt(score) / 10000)
   }
